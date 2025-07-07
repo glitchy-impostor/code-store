@@ -11,7 +11,7 @@ def parse_args():
     parser.add_argument('username', type=str, help='JIRA username')
     parser.add_argument('password', type=str, help='JIRA password')
     parser.add_argument('--start_date', type=lambda s: datetime.strptime(s, '%Y-%m-%d'), required=True, help='Start date (YYYY-MM-DD)')
-    parser.add_argument('--end_date', type=lambda s: datetime.strptime(s, '%Y-MM-DD'), required=True, help='End date (YYYY-MM-DD)')
+    parser.add_argument('--end_date', type=lambda s: datetime.strptime(s, '%Y-%m-%d'), required=True, help='End date (YYYY-MM-DD)')
     
     return parser.parse_args()
 
@@ -27,7 +27,7 @@ def authenticate_jira(url, username, password):
         exit(1)
 
 def fetch_completed_issues(jira_instance, start_date, end_date):
-    query = f'fixDate >= {start_date.strftime("%Y-%m-%d")} AND fixDate <= {end_date.strftime("%Y-%m-%d")}'
+    query = f'closed >= {start_date.strftime("%Y-%m-%d")} AND closed <= {end_date.strftime("%Y-%m-%d")}'
     issues = jira_instance.search_issues(query)
     print(f"Found {len(issues)} completed issues between {start_date} and {end_date}.")
     return issues
