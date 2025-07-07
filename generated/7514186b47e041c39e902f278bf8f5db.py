@@ -54,6 +54,7 @@ def plot_results(assignee_counts):
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
+    plt.savefig("figureReturned.png")
 
 if __name__ == "__main__":
     args = parse_args()
