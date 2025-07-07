@@ -1,46 +1,22 @@
 
-import argparse
-from github import Github
-import requests
-import smtplib
-from email.mime.text import MIMEText
-
-def fetch_file_content(github_url, github_token):
-    g = Github(github_token)
-    repo_name = github_url.split('/')[-2]
-    file_path = '/'.join(github_url.split('/')[-1].split('/')[:-1])
-    
-    try:
-        repo = g.get_repo(repo_name)
-        content = repo.get_contents(file_path)
-        return content.decoded_content.decode('utf-8')
-    except Exception as e:
-        raise Exception(f"Failed to fetch file from GitHub: {e}")
-
-def send_result_via_email(result, email_address):
-    sender_email = "your-email@example.com"
-    receiver_email = email_address
-    password = "your-email-password"
-
-    message = MIMEText(result)
-    message["From"] = sender_email
-    message["To"] = receiver_email
-    message["Subject"] = "Sandbox Execution Result"
-
-    with smtplib.SMTP_SSL("smtp.example.com", 465) as server:
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, message.as_string())
+import json
 
 def main(github_url, cmd_send_value, email_address, github_token):
     try:
         file_content = fetch_file_content(github_url, github_token)
-        post_url = "https://example.com/sandbox"
+        post_url = "http://127.0.0.1:8000/execute"
         payload = {
             'code': file_content,
-            'command': cmd_send_value
+            'working_directory': None,
+            'command_args': cmd_send_value
         }
         
-        response = requests.post(post_url, data=payload)
+        headers = {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        }
+        
+        response = requests.post(post_url, data=json.dumps(payload), headers=headers)
         if response.status_code == 200:
             result = response.text
             send_result_via_email(result, email_address)
