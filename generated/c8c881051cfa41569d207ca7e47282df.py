@@ -1,64 +1,48 @@
 
-import schedule
-import time
-import requests
-from datetime import datetime, timedelta
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from jira import JIRA
+from flask import Flask, request, jsonify
+from celery import Celery
 
-# Setup email details
-sender_email = 'your_email@example.com'
-receiver_email = 'receiver_email@example.com'
-password = 'your_password'
+app = Flask(__name__)
 
-def send_mail(subject, body):
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    msg['Subject'] = subject
+# Configure Celery
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 
-    msg.attach(MIMEText(body, 'plain'))
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
 
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(sender_email, password)
-    text = msg.as_string()
-    server.sendmail(sender_email, receiver_email, text)
-    server.quit()
-
-def get_jira_data():
-    jira_options = {'server': 'https://your-jira-url'}
-    jira = JIRA(options=jira_options, auth=('username', 'password'))
-
-    start_date = datetime.now() - timedelta(days=30)
-    end_date = datetime.now()
+@celery.task
+def execute_and_save_graph(code):
+    # Execute JIRA code (this is a placeholder)
+    result = requests.post('https://example.com/api/jira', data={'code': code})
     
-    worklogs = [worklog for issue in jira.search_issues(jql_query=f"project=YourProject AND updated > {start_date} AND updated < {end_date}") 
-                for worklog in issue.fields.worklog.worklogs]
-                
-    # create a dictionary to store worklog data
-    worklog_dict = {'date': [], 'hours': []}
-    for log in worklogs:
-        worklog_dict['date'].append(log.created)
-        worklog_dict['hours'].append(log.timeSpentSeconds/3600)
-    
-    return worklog_dict
+    if result.status_code == 200:
+        data = result.json()
+        
+        # Produce and save graph
+        import networkx as nx
+        import matplotlib.pyplot as plt
+        
+        G = nx.Graph()
+        for node in data['nodes']:
+            G.add_node(node)
+        for edge in data['edges']:
+            G.add_edge(edge[0], edge[1])
+        
+        plt.figure(figsize=(12, 8))
+        nx.draw(G, with_labels=True, font_weight='bold')
+        plt.savefig('graph.png')
+    else:
+        print(f"Failed to execute JIRA code: {result.status_code}")
 
-def plot_graph(worklog_data):
-    # Use matplotlib or any other library to plot the graph
-    pass
+@app.route('/execute', methods=['POST'])
+def execute():
+    data = request.get_json()
+    if 'code' not in data:
+        return jsonify({'error': 'Missing code parameter'}), 400
     
-def send_to_sandbox():
-    code = get_jira_data()
-    response = requests.post('http://localhost:8000/execute', data=code)
-    
-    # Send result via email
-    send_mail("Result", str(response.content))
-    
-schedule.every().day.at("10:30").do(send_to_sandbox)
+    execute_and_save_graph.delay(data['code'])
+    return jsonify({'message': 'Task queued successfully'}), 202
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+if __name__ == '__main__':
+    app.run(debug=True)
