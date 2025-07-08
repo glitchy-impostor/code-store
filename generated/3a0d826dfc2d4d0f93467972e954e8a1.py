@@ -1,44 +1,57 @@
 
-import requests
-import smtplib
-from email.mime.text import MIMEText
+# Import necessary libraries
+import jira
+from datetime import datetime
+import matplotlib.pyplot as plt
 
-def get_worklog_graph():
-    # Code to connect to JIRA and retrieve worklogs between two dates
-    pass
+# Function to fetch worklogs from JIRA between two dates
+def get_worklogs(jira_client, start_date, end_date):
+    issues = jira_client.search_issues(f'worklogDate >= "{start_date}" AND worklogDate <= "{end_date}"')
+    worklogs = {}
+    for issue in issues:
+        for comment in issue.fields.comment.comments:
+            if 'Work logged' in comment.body:
+                user = comment.author.displayName
+                if user not in worklogs:
+                    worklogs[user] = 1
+                else:
+                    worklogs[user] += 1
+    return worklogs
 
-def plot_worklog_graph(worklogs):
-    # Code to plot the graph of worklogs
-    pass
+# Function to create and save a bar chart of worklogs
+def create_bar_chart(worklogs):
+    users = list(worklogs.keys())
+    issues_completed = list(worklogs.values())
 
-def send_email(body):
-    msg = MIMEText(body)
-    msg['Subject'] = 'Worklog Graph'
-    msg['From'] = 'your-email@example.com'
-    msg['To'] = 'recipient@example.com'
+    plt.figure(figsize=(10, 6))
+    plt.bar(users, issues_completed, color='skyblue')
+    plt.xlabel('Individuals')
+    plt.ylabel('Number of Issues Completed')
+    plt.title('Worklog Completion by Individuals')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.savefig('worklog_completion.png')
 
-    with smtplib.SMTP('localhost') as server:
-        server.send_message(msg)
+# Main function to execute the process
+def main():
+    # JIRA credentials and URL
+    jira_url = 'https://your-jira-instance.atlassian.net'
+    username = 'your-email@example.com'
+    api_token = 'your-api-token'
 
-def run_sandbox_code(code, *args):
-    url = "http://localhost:8000/execute"
-    payload = {'code': code, 'args': args}
-    response = requests.post(url, json=payload)
-    result = response.json()
-    return result
+    # Create JIRA client
+    jira_client = jira.JIRA(jira_url, auth=(username, api_token))
 
+    # Define date range
+    start_date = datetime(2023, 1, 1).strftime('%Y-%m-%d')
+    end_date = datetime(2023, 12, 31).strftime('%Y-%m-%d')
+
+    # Get worklogs between the specified dates
+    worklogs = get_worklogs(jira_client, start_date, end_date)
+
+    # Create and save bar chart
+    create_bar_chart(worklogs)
+
+# Run the main function
 if __name__ == '__main__':
-    worklogs = get_worklog_graph()
-    plot_worklog_graph(worklogs)
-
-    graph_code = '''\
-def plot_worklog_graph(worklogs):
-    # Code to plot the graph of worklogs
-    pass
-'''
-
-    graph_args = (worklogs,)
-    result = run_sandbox_code(graph_code, *graph_args)
-    
-    email_body = 'Worklog graph data: {}'.format(result)
-    send_email(email_body)
+    main()
