@@ -86,7 +86,7 @@ def main():
     api_token = 'ATATT3xFfGF0OX9wDe6uyJjiXlsHJChtimXHeoKmZls1zXSd7lIaTL0Qhl-e7Jn13wY228mud5iUy7Rug8YJYIsSqJdTdLNnVcb1l24WLL7CjRV8kMjCNldEuqtmjqLkzZkzODuQlIGRebP0n3lIlbgGSgdbOe1r'
 
     # Create JIRA client
-    jira_client = jira.JIRA(jira_url, auth=(username, api_token))
+    jira_client = jira.JIRA(options={'server':jira_url}, basic_auth=(username, api_token))
 
     # Get worklogs for the last month
     start_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
