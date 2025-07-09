@@ -29,15 +29,15 @@ def run_sandbox_code(code, *args):
     payload = {'code': code, 'command_args': args}
     response = requests.post(url, json=payload)
     result = response.json()
-     output_text = "Output: " + result['output'] + "\n\n"
-     output_text += "Execution ID: " + str(result['execution_id']) + "\n\n"
-     files_ = result['generated_files']
-     if(len(files_)>0):
-         output_text += "Files Generated: \n"
-     else:
-         output_text += "Files Generated: None"
-     for file_ in files_:
-         output_text += file_ + " Located at: http://127.0.0.1:8000/download/" + result['execution_id'] + "/" + file_ + " \n"
+    output_text = "Output: " + result['output'] + "\n\n"
+    output_text += "Execution ID: " + str(result['execution_id']) + "\n\n"
+    files_ = result['generated_files']
+    if(len(files_)>0):
+        output_text += "Files Generated: \n"
+    else:
+        output_text += "Files Generated: None"
+    for file_ in files_:
+        output_text += file_ + " Located at: http://127.0.0.1:8000/download/" + result['execution_id'] + "/" + file_ + " \n"
     return output_text
 
 if __name__ == '__main__':
