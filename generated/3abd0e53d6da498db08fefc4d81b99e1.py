@@ -10,7 +10,7 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 
 def execute_code(code, command_args):
     """Sandbox the code and send a POST request to execute it."""
-    url = "http://localhost:8000/execute"
+    url = "http://127.0.0.1:8000/execute"
     payload = {
         'code': code,
         'command_args': command_args,
@@ -18,19 +18,20 @@ def execute_code(code, command_args):
     }
     response = requests.post(url, json=payload)
     result = response.json()
+    try:
+        output_text = "Output: " + result['output'] + "\n\n"
+        output_text += "Execution ID: " + str(result['execution_id']) + "\n\n"
+        files_ = result['generated_files']
+        if(len(files_) > 0):
+            output_text += "Files Generated: \n"
+        else:
+            output_text += "Files Generated: None"
+        for file_ in files_:
+            output_text += file_ + " Located at: http://127.0.0.1:8000/download/" + result['execution_id'] + "/" + file_ + " \n"
     
-    output_text = "Output: " + result['output'] + "\n\n"
-    output_text += "Execution ID: " + str(result['execution_id']) + "\n\n"
-    files_ = result['generated_files']
-    if(len(files_) > 0):
-        output_text += "Files Generated: \n"
-    else:
-        output_text += "Files Generated: None"
-    for file_ in files_:
-        output_text += file_ + " Located at: http://127.0.0.1:8000/download/" + result['execution_id'] + "/" + file_ + " \n"
-    
-    return output_text
-
+        return output_text
+    except:
+        return str(result)
 def send_email(subject, body, to_email):
     """Send an email via Gmail's SMTP server."""
     from_email = "oracleofodes@gmail.com"
