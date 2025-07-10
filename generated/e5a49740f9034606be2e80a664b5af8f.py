@@ -37,7 +37,7 @@ def plot_ticket_counts(ticket_count):
     plt.tight_layout()
     plt.savefig('tickets_closed_by_assignee.png')
 
-def driver_function(username, password):
+def driver_function(username, password, jira_url):
     """Driver function to execute the entire process."""
     project_key = 'NPM'
     
@@ -45,7 +45,7 @@ def driver_function(username, password):
     end_date = datetime.now().strftime('%Y-%m-%d')
     start_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
 
-    jira_client = get_jira_client(username, password)
+    jira_client = get_jira_client(username, password, jira_url)
     issues = get_completed_tickets_in_timeframe(jira_client, project_key, start_date, end_date)
     ticket_count = count_tickets_per_assignee(issues)
     plot_ticket_counts(ticket_count)
@@ -54,6 +54,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a graph showing the number of tickets completed by each assignee.")
     parser.add_argument("username", help="JIRA username")
     parser.add_argument("password", help="JIRA password")
+    parser.add_argument("jira_url", help="JIRA URL")
     
     args = parser.parse_args()
-    driver_function(args.username, args.password)
+    driver_function(args.username, args.password, args.jira_url)
