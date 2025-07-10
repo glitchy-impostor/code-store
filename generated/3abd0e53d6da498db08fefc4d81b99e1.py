@@ -57,7 +57,8 @@ def driver_function(code, command_args, schedule_time, recipient_email):
     """
     # Schedule the code execution
     scheduler = BackgroundScheduler()
-    scheduler.add_job(execute_code, 'date', run_date=time.time() + schedule_time, args=[code, command_args], id="execute_job")
+    run_date = time.time() + schedule_time
+    scheduler.add_job(execute_code, 'date', run_date=run_date, args=[code, command_args], id="execute_job")
     def callback(x):
         send_email("Code Execution Result", str(x), recipient_email)
     job = scheduler.get_job("execute_job")
@@ -90,7 +91,6 @@ if __name__ == "__main__":
     parser.add_argument('--code', type=str, required=True, help='Code to execute')
     parser.add_argument('--command_args', type=str, default='', help='Command arguments for the code')
     parser.add_argument('--schedule_time', type=int, required=True, help='Time in seconds from now to schedule the execution')
-    parser.add_argument('--recipient_email', type=str, required=True, help='Email address to send the results to')
+    parser.add_argument('--recipient_email', type=str, required=True, help='Email address to send results to')
     args = parser.parse_args()
-    
     driver_function(args.code, args.command_args, args.schedule_time, args.recipient_email)
