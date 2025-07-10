@@ -6,6 +6,7 @@ import requests
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 
 def execute_code(code, command_args):
     """Sandbox the code and send a POST request to execute it."""
