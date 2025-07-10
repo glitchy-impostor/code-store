@@ -46,30 +46,32 @@ def send_email(subject, body, to_email):
     server.sendmail(from_email, to_email, text)
     server.quit()
 
-def driver_function(code, command_args, schedule_time):
+def driver_function(code, command_args, schedule_time, recipient_email):
     """
     Driver function to handle scheduling and executing the code.
     
     :param code: str, the code string to execute
     :param command_args: str, any additional command arguments for the code
     :param schedule_time: int, the time in seconds from now to schedule the execution
+    :param recipient_email: str, the email address to send the results to
     """
     # Schedule the code execution
     scheduler = BackgroundScheduler()
-    scheduler.add_job(execute_code, 'date', run_date=time.time() + schedule_time, args=[code, command_args], callback=lambda x: send_email("Code Execution Result", str(x), "recipient@example.com"))
+    scheduler.add_job(execute_code, 'date', run_date=time.time() + schedule_time, args=[code, command_args], callback=lambda x: send_email("Code Execution Result", str(x), recipient_email))
     scheduler.start()
 
-def recurring_driver_function(code, command_args, interval):
+def recurring_driver_function(code, command_args, interval, recipient_email):
     """
     Driver function to handle recurring scheduling and executing the code.
     
     :param code: str, the code string to execute
     :param command_args: str, any additional command arguments for the code
     :param interval: int, the time in seconds between each execution
+    :param recipient_email: str, the email address to send the results to
     """
     # Schedule the code execution
     scheduler = BackgroundScheduler()
-    scheduler.add_job(execute_code, 'interval', seconds=interval, args=[code, command_args], callback=lambda x: send_email("Code Execution Result", str(x), "recipient@example.com"))
+    scheduler.add_job(execute_code, 'interval', seconds=interval, args=[code, command_args], callback=lambda x: send_email("Code Execution Result", str(x), recipient_email))
     scheduler.start()
 
 if __name__ == "__main__":
@@ -77,21 +79,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Schedule and execute code.")
     subparsers = parser.add_subparsers(dest='command')
 
-    # Command for one-time scheduling
-    schedule_parser = subparsers.add_parser('schedule', help="Schedule a one-time execution of the code")
-    schedule_parser.add_argument('code', type=str, help='The code string to execute')
-    schedule_parser.add_argument('command_args', type=str, help='Any additional command arguments for the code')
-    schedule_parser.add_argument('schedule_time', type=int, help='The time in seconds from now to schedule the execution')
+    # Command for one-time execution
+    one_time_parser = subparsers.add_parser('one-time')
+    one_time_parser.add_argument('code', type=str, help='The code to execute')
+    one_time_parser.add_argument('command_args', type=str, help='Command arguments for the code')
+    one_time_parser.add_argument('schedule_time', type=int, help='Time in seconds from now to schedule the execution')
+    one_time_parser.add_argument('recipient_email', type=str, help='Email address to send results to')
 
-    # Command for recurring scheduling
-    recurring_parser = subparsers.add_parser('recurring', help="Schedule a recurring execution of the code")
-    recurring_parser.add_argument('code', type=str, help='The code string to execute')
-    recurring_parser.add_argument('command_args', type=str, help='Any additional command arguments for the code')
-    recurring_parser.add_argument('interval', type=int, help='The time in seconds between each execution')
+    # Command for recurring execution
+    recurring_parser = subparsers.add_parser('recurring')
+    recurring_parser.add_argument('code', type=str, help='The code to execute')
+    recurring_parser.add_argument('command_args', type=str, help='Command arguments for the code')
+    recurring_parser.add_argument('interval', type=int, help='Interval in seconds between each execution')
+    recurring_parser.add_argument('recipient_email', type=str, help='Email address to send results to')
 
     args = parser.parse_args()
 
-    if args.command == 'schedule':
-        driver_function(args.code, args.command_args, args.schedule_time)
+    if args.command == 'one-time':
+        driver_function(args.code, args.command_args, args.schedule_time, args.recipient_email)
     elif args.command == 'recurring':
-        driver_function(args.code, args.command_args, args.interval)
+        recurring_driver_function(args.code, args.command_args, args.interval, args.recipient_email)
