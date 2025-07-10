@@ -59,13 +59,19 @@ def driver_function(code, command_args, schedule_time, recipient_email):
     """
     # Schedule the code execution
     scheduler = BackgroundScheduler()
+    loop_control = True
     def job_func():
+        #print("True")
         result = execute_code(code, command_args)
         send_email("Code Execution Result", result, recipient_email)
+        #print("sent")
+        loop_control=False
 
     run_date = datetime.fromtimestamp(time.time() + schedule_time)
     scheduler.add_job(job_func, 'date', run_date=run_date)
     scheduler.start()
+    while(loop_control):
+        time.sleep(1)
 
 def recurring_driver_function(code, command_args, interval, recipient_email):
     """
@@ -78,13 +84,18 @@ def recurring_driver_function(code, command_args, interval, recipient_email):
     """
     # Schedule the code execution
     scheduler = BackgroundScheduler()
-    
+    loop_control = True
     def job_func():
+        #print("entry")
         result = execute_code(code, command_args)
         send_email("Code Execution Result", result, recipient_email)
+        loop_control=False
 
     scheduler.add_job(job_func, 'interval', seconds=interval)
     scheduler.start()
+    while(loop_control):
+        time.sleep(1)
+    #print("in")
 
 if __name__ == "__main__":
     import argparse
