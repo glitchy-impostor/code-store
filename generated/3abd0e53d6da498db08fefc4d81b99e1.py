@@ -102,10 +102,10 @@ def recurring_driver_function(code, command_args, interval, recipient_email):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Schedule code execution.')
-    parser.add_argument('--code', type=str, required=True, help='Code to execute')
+    parser.add_argument('--code', type=str, default="print('Hello World')", help='Code to execute')
     parser.add_argument('--command_args', type=str, default='', help='Command arguments for the code')
-    parser.add_argument('--schedule_time', type=int, required=True, help='Time in seconds from now to schedule the execution')
-    parser.add_argument('--recipient_email', type=str, required=True, help='Email address to send the results to')
+    parser.add_argument('--schedule_time', type=int, default=5, help='Time in seconds from now to schedule the execution')
+    parser.add_argument('--recipient_email', type=str, default="krishtsha21@gmail.com", help='Email address to send the results to')
     
     args = parser.parse_args()
     
