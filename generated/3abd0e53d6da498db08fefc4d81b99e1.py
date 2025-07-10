@@ -59,13 +59,13 @@ def driver_function(code, command_args, schedule_time, recipient_email):
     # Schedule the code execution
     scheduler = BackgroundScheduler()
     run_date = datetime.fromtimestamp(time.time() + schedule_time)
-    job = scheduler.add_job(execute_code, 'date', run_date=run_date, args=[code, command_args], id="execute_job")
-    
-    def callback(x):
-        send_email("Code Execution Result", str(x), recipient_email)
-    
-    if job:
-        job.add_listener(callback, events=['completed'])
+    def callback(event):
+        if event.job_id == "execute_job":
+            result = execute_code(code, command_args)
+            send_email("Code Execution Result", result, recipient_email)
+
+    scheduler.add_listener(callback, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
+    scheduler.add_job(execute_code, 'date', run_date=run_date, args=[code, command_args], id="execute_job")
     scheduler.start()
 
 def recurring_driver_function(code, command_args, interval, recipient_email):
@@ -80,14 +80,13 @@ def recurring_driver_function(code, command_args, interval, recipient_email):
     # Schedule the code execution
     scheduler = BackgroundScheduler()
     
-    def callback(x):
-        send_email("Code Execution Result", str(x), recipient_email)
-    
-    job = scheduler.add_job(execute_code, 'interval', seconds=interval, args=[code, command_args], id="recurring_execute_job")
-    
-    if job:
-        job.add_listener(callback, events=['completed'])
-    
+    def callback(event):
+        if event.job_id == "recurring_execute_job":
+            result = execute_code(code, command_args)
+            send_email("Code Execution Result", result, recipient_email)
+
+    scheduler.add_listener(callback, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
+    scheduler.add_job(execute_code, 'interval', seconds=interval, args=[code, command_args], id="recurring_execute_job")
     scheduler.start()
 
 if __name__ == "__main__":
