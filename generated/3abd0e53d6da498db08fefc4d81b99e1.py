@@ -47,16 +47,42 @@ def driver_function(code, command_args, schedule_time):
     scheduler.add_job(execute_code, 'date', run_date=time.time() + schedule_time, args=[code, command_args], callback=lambda x: send_email("Code Execution Result", str(x), "recipient@example.com"))
     scheduler.start()
 
+def recurring_driver_function(code, command_args, interval):
+    """
+    Driver function to handle recurring scheduling and executing the code.
+    
+    :param code: str, the code string to execute
+    :param command_args: str, any additional command arguments for the code
+    :param interval: int, the time in seconds between each execution
+    """
+    # Schedule the code execution
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(execute_code, 'interval', seconds=interval, args=[code, command_args], callback=lambda x: send_email("Code Execution Result", str(x), "recipient@example.com"))
+    scheduler.start()
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Schedule and execute code.")
-    parser.add_argument('code', type=str, help='The code string to execute')
-    parser.add_argument('command_args', type=str, help='Any additional command arguments for the code')
-    parser.add_argument('schedule_time', type=int, help='Time in seconds from now to schedule the execution (between 60 and 604800 seconds)')
-    
+    subparsers = parser.add_subparsers(dest='command')
+
+    # Command for one-time scheduling
+    schedule_parser = subparsers.add_parser('schedule', help="Schedule a one-time execution of the code")
+    schedule_parser.add_argument('code', type=str, help='The code string to execute')
+    schedule_parser.add_argument('command_args', type=str, help='Any additional command arguments for the code')
+    schedule_parser.add_argument('schedule_time', type=int, help='Time in seconds from now to schedule the execution (between 60 and 604800 seconds)')
+
+    # Command for recurring scheduling
+    recurring_parser = subparsers.add_parser('recurring', help="Schedule a recurring execution of the code")
+    recurring_parser.add_argument('code', type=str, help='The code string to execute')
+    recurring_parser.add_argument('command_args', type=str, help='Any additional command arguments for the code')
+    recurring_parser.add_argument('interval', type=int, help='Time in seconds between each execution')
+
     args = parser.parse_args()
-    
-    if 60 <= args.schedule_time <= 604800:
-        driver_function(args.code, args.command_args, args.schedule_time)
-    else:
-        print("Schedule time must be between 1 minute and 7 days (inclusive).")
+
+    if args.command == 'schedule':
+        if 60 <= args.schedule_time <= 604800:
+            driver_function(args.code, args.command_args, args.schedule_time)
+        else:
+            print("Schedule time must be between 1 minute and 7 days (inclusive).")
+    elif args.command == 'recurring':
+        recurring_driver_function(args.code, args.command_args, args.interval)
