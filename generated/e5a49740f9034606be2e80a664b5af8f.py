@@ -10,7 +10,7 @@ def get_jira_client(username, password, jira_url):
 
 def get_completed_tickets_in_timeframe(jira_client, project_key, start_date, end_date):
     """Retrieve tickets that were worked on and completed within the given timeframe."""
-    query = f'project = {project_key} AND closed >="{start_date}" AND closed <= "{end_date}"'
+    query = f'project = {project_key} AND created >="{start_date}" AND created <= "{end_date}" AND status=Done'
     issues = jira_client.search_issues(query)
     return issues
 
