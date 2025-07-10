@@ -59,10 +59,11 @@ def driver_function(code, command_args, schedule_time, recipient_email):
     # Schedule the code execution
     scheduler = BackgroundScheduler()
     run_date = datetime.fromtimestamp(time.time() + schedule_time)
-    scheduler.add_job(execute_code, 'date', run_date=run_date, args=[code, command_args], id="execute_job")
+    job = scheduler.add_job(execute_code, 'date', run_date=run_date, args=[code, command_args], id="execute_job")
+    
     def callback(x):
         send_email("Code Execution Result", str(x), recipient_email)
-    job = scheduler.get_job("execute_job")
+    
     if job:
         job.add_listener(callback, events=['completed'])
     scheduler.start()
@@ -78,12 +79,15 @@ def recurring_driver_function(code, command_args, interval, recipient_email):
     """
     # Schedule the code execution
     scheduler = BackgroundScheduler()
+    
     def callback(x):
         send_email("Code Execution Result", str(x), recipient_email)
-    scheduler.add_job(execute_code, 'interval', seconds=interval, args=[code, command_args], id="recurring_execute_job")
-    job = scheduler.get_job("recurring_execute_job")
+    
+    job = scheduler.add_job(execute_code, 'interval', seconds=interval, args=[code, command_args], id="recurring_execute_job")
+    
     if job:
         job.add_listener(callback, events=['completed'])
+    
     scheduler.start()
 
 if __name__ == "__main__":
@@ -92,6 +96,11 @@ if __name__ == "__main__":
     parser.add_argument('--code', type=str, required=True, help='Code to execute')
     parser.add_argument('--command_args', type=str, default='', help='Command arguments for the code')
     parser.add_argument('--schedule_time', type=int, required=True, help='Time in seconds from now to schedule the execution')
-    parser.add_argument('--recipient_email', type=str, required=True, help='Email address to send results to')
+    parser.add_argument('--recipient_email', type=str, required=True, help='Email address to send the results to')
+    
     args = parser.parse_args()
-    driver_function(args.code, args.command_args, args.schedule_time, args.recipient_email)
+    
+    if args.schedule_time > 0:
+        driver_function(args.code, args.command_args, args.schedule_time, args.recipient_email)
+    else:
+        recurring_driver_function(args.code, args.command_args, -args.schedule_time, args.recipient_email)
