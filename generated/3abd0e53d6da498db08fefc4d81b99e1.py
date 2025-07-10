@@ -59,14 +59,12 @@ def driver_function(code, command_args, schedule_time, recipient_email):
     """
     # Schedule the code execution
     scheduler = BackgroundScheduler()
-    run_date = datetime.fromtimestamp(time.time() + schedule_time)
-    def callback(event):
-        if event.job_id == "execute_job":
-            result = execute_code(code, command_args)
-            send_email("Code Execution Result", result, recipient_email)
+    def job_func():
+        result = execute_code(code, command_args)
+        send_email("Code Execution Result", result, recipient_email)
 
-    scheduler.add_listener(callback, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
-    scheduler.add_job(execute_code, 'date', run_date=run_date, args=[code, command_args], id="execute_job")
+    run_date = datetime.fromtimestamp(time.time() + schedule_time)
+    scheduler.add_job(job_func, 'date', run_date=run_date)
     scheduler.start()
 
 def recurring_driver_function(code, command_args, interval, recipient_email):
@@ -81,13 +79,11 @@ def recurring_driver_function(code, command_args, interval, recipient_email):
     # Schedule the code execution
     scheduler = BackgroundScheduler()
     
-    def callback(event):
-        if event.job_id == "recurring_execute_job":
-            result = execute_code(code, command_args)
-            send_email("Code Execution Result", result, recipient_email)
+    def job_func():
+        result = execute_code(code, command_args)
+        send_email("Code Execution Result", result, recipient_email)
 
-    scheduler.add_listener(callback, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
-    scheduler.add_job(execute_code, 'interval', seconds=interval, args=[code, command_args], id="recurring_execute_job")
+    scheduler.add_job(job_func, 'interval', seconds=interval)
     scheduler.start()
 
 if __name__ == "__main__":
@@ -101,6 +97,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     if args.schedule_time > 0:
+        print(args.code, args.schedule_time)
         driver_function(args.code, args.command_args, args.schedule_time, args.recipient_email)
     else:
         recurring_driver_function(args.code, args.command_args, -args.schedule_time, args.recipient_email)
