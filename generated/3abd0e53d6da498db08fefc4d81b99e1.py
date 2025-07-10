@@ -13,7 +13,8 @@ def execute_code(code, command_args):
     url = "http://localhost:8000/execute"
     payload = {
         'code': code,
-        'command_args': command_args
+        'command_args': command_args,
+        'working_directory': None
     }
     response = requests.post(url, json=payload)
     result = response.json()
