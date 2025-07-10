@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import argparse
 
-def get_jira_client(username, password):
+def get_jira_client(username, password, jira_url):
     """Create a JIRA client using basic authentication."""
-    return jira.JIRA('https://your-jira-url.com', auth=(username, password))
+    return jira.JIRA(jira_url, auth=(username, password))
 
 def get_completed_tickets_in_timeframe(jira_client, project_key, start_date, end_date):
     """Retrieve tickets that were worked on and completed within the given timeframe."""
