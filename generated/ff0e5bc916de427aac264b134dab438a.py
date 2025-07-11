@@ -23,4 +23,4 @@ def echo(message):
 
 if __name__ == '__main__':
     # Driver function to run the Flask application
-    app.run(host='localhost', port=8080)
+    app.run(port=1000)
