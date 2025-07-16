@@ -1,5 +1,6 @@
 
 import sys
+import random
 
 def multiply_numbers(a, b):
     """Multiply two numbers and return the result."""
@@ -19,7 +20,7 @@ def divide_result(dividend, divisor):
         sys.exit(1)
     return dividend / divisor
 
-def main(args):
+def get_numbers(args):
     try:
         # Convert command line arguments to floats
         num1 = float(args[1])
@@ -28,16 +29,27 @@ def main(args):
         num4 = float(args[4])
         num5 = float(args[5])
         
-        # Compose the functions as required
-        result_multiplication = multiply_numbers(num1, num2)
-        result_addition = add_three_numbers(num3, num4, num5)
-        final_result = divide_result(result_multiplication, result_addition)
-        
-        print(f"The result of division is: {final_result}")
+        return num1, num2, num3, num4, num5
     
     except (IndexError, ValueError):
-        print("Error: Please provide exactly five floating point numbers as command line arguments.")
-        sys.exit(1)
+        # If no command line arguments are provided, generate five random numbers
+        return (
+            random.random() * 10,
+            random.random() * 10,
+            random.random() * 10,
+            random.random() * 10,
+            random.random() * 10
+        )
+
+def main(args):
+    num1, num2, num3, num4, num5 = get_numbers(args)
+    
+    # Compose the functions as required
+    result_multiplication = multiply_numbers(num1, num2)
+    result_addition = add_three_numbers(num3, num4, num5)
+    final_result = divide_result(result_multiplication, result_addition)
+    
+    print(f"The result of division is: {final_result}")
 
 # Example usage:
 # python script.py 4.5 2.0 1.0 2.0 3.0
