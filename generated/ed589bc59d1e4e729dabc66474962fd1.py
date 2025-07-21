@@ -24,12 +24,12 @@ def get_last_week():
     return start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')
 
 def fetch_tickets(jira, start_date, end_date):
-    jql_query = f"project = PROJECT_KEY AND status in ('Pending', 'Completed') AND created >= '{start_date}' AND created <= '{end_date}'"
+    jql_query = f"project = NPM AND status in ('Pending', 'Completed') AND created >= '{start_date}' AND created <= '{end_date}'"
     return jira.search_issues(jql_query)
 
 def categorize_tickets(tickets):
-    pending = [ticket for ticket in tickets if ticket.fields.status.name == 'Pending']
-    completed = [ticket for ticket in tickets if ticket.fields.status.name == 'Completed']
+    pending = [ticket for ticket in tickets if ticket.fields.status.name != 'Done']
+    completed = [ticket for ticket in tickets if ticket.fields.status.name == 'Done']
     return pending, completed
 
 def count_tickets_per_person(tickets):
