@@ -28,7 +28,6 @@ def fetch_tickets(jira, start_date, end_date):
     return jira.search_issues(jql_query)
 
 def categorize_tickets(tickets):
-    #print(tickets)
     pending = [ticket for ticket in tickets if ticket.fields.status.name != 'Done']
     completed = [ticket for ticket in tickets if ticket.fields.status.name == 'Done']
     return pending, completed
@@ -50,12 +49,13 @@ def plot_results(data):
     plt.bar(x_pos, pending_counts, color='red', align='center', alpha=0.75, label='Pending')
     plt.bar([x + 0.3 for x in x_pos], completed_counts, color='green', align='center', alpha=0.75, label='Completed')
 
-    plt.xticks(x_pos, people)
+    plt.xticks(x_pos, people, rotation=45)  # Adjusted angle of labels
     plt.xlabel('Person')
     plt.ylabel('Number of Tickets')
     plt.title('Ticket Status Over the Last Week')
     plt.legend()
 
+    plt.tight_layout()  # Adjusts subplot params for padding and spacing
     plt.show()
     plt.savefig("saved.png")
 
