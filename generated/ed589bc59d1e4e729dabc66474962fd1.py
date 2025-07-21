@@ -46,8 +46,8 @@ def plot_results(data):
 
     x_pos = [i for i, _ in enumerate(people)]
     
-    plt.bar(x_pos, pending_counts, color='red', align='center', alpha=0.75, label='Pending')
-    plt.bar([x + 0.3 for x in x_pos], completed_counts, color='green', align='center', alpha=0.75, label='Completed')
+    plt.bar(x_pos, pending_counts, color='red', align='center', alpha=0.75, width=0.3, label='Pending')
+    plt.bar([x + 0.4 for x in x_pos], completed_counts, color='green', align='center', alpha=0.75, width=0.3, label='Completed')
 
     plt.xticks(x_pos, people, rotation=45)  # Adjusted angle of labels
     plt.xlabel('Person')
