@@ -56,6 +56,7 @@ def plot_results(data):
     plt.legend()
 
     plt.show()
+    plt.savefig("saved.png")
 
 def driver_function(args):
     jira = connect_to_jira(args)
