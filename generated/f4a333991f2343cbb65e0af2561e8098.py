@@ -59,4 +59,44 @@ def create_and_save_bar_graph(data: Dict[str, int], output_file: str) -> None:
 
     # Add spacing between bars by adjusting x-axis limits and bar width
     ax.set_xticks(range(len(names)))
-    ax.set_xticklabels(names, rotation=45, ha
+    ax.set_xticklabels(names, rotation=45, ha='right')
+    ax.set_ylabel('Number of Completed Issues')
+    ax.set_title('Completed Issues per Person in the Last Week')
+    ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+    # Add value labels on top of bars
+    for bar in bars:
+        height = bar.get_height()
+        ax.annotate(f'{height}',
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+    plt.tight_layout()
+    plt.savefig(output_file)
+    plt.close(fig)
+
+
+def run_jira_report(jira_server: str, jira_user: str, jira_token: str, jql_project: str, output_file: str) -> None:
+    """
+    Driver function to generate completed issues report and save bar graph.
+
+    Args:
+        jira_server (str): URL of the JIRA server.
+        jira_user (str): JIRA username/email.
+        jira_token (str): JIRA API token or password.
+        jql_project (str): JQL project key or query to filter issues.
+        output_file (str): Path to save the graph image.
+    """
+    data = get_completed_issues_per_person(jira_server, jira_user, jira_token, jql_project)
+    create_and_save_bar_graph(data, output_file)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 6:
+        print(f"Usage: {sys.argv[0]} <jira_server> <jira_user> <jira_token> <jql_project> <output_file>")
+        sys.exit(1)
+
+    _, jira_server, jira_user, jira_token, jql_project, output_file = sys.argv
+    run_jira_report(jira_server, jira_user, jira_token, jql_project, output_file)
